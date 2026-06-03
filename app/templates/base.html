@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}School Management System{% endblock %}</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Visual Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Flash notification messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages" id="flash-container">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {% if category == 'success' %}
+                            <i class="fa-solid fa-circle-check"></i>
+                        {% elif category == 'warning' or category == 'error' %}
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                        {% else %}
+                            <i class="fa-solid fa-circle-info"></i>
+                        {% endif %}
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% if session.get('user_id') %}
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo-container">
+                <div class="logo-icon">S</div>
+                <div class="logo-text">SMS Portal</div>
+            </div>
+            
+            <nav class="nav-container">
+                <ul class="nav-links">
+                    <li class="nav-item {% if request.path == '/' %}active{% endif %}">
+                        <a href="{{ url_for('dashboard') }}">
+                            <i class="fa-solid fa-chart-pie"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item {% if request.path.startswith('/students') %}active{% endif %}">
+                        <a href="{{ url_for('students') }}">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                            <span>Students</span>
+                        </a>
+                    </li>
+                    <li class="nav-item {% if request.path.startswith('/teachers') %}active{% endif %}">
+                        <a href="{{ url_for('teachers') }}">
+                            <i class="fa-solid fa-chalkboard-user"></i>
+                            <span>Teachers</span>
+                        </a>
+                    </li>
+                    <li class="nav-item {% if request.path.startswith('/attendance') %}active{% endif %}">
+                        <a href="{{ url_for('attendance') }}">
+                            <i class="fa-solid fa-calendar-check"></i>
+                            <span>Attendance</span>
+                        </a>
+                    </li>
+                    <li class="nav-item {% if request.path.startswith('/fees') %}active{% endif %}">
+                        <a href="{{ url_for('fees') }}">
+                            <i class="fa-solid fa-wallet"></i>
+                            <span>Fees</span>
+                        </a>
+                    </li>
+                    <li class="nav-item {% if request.path.startswith('/reports') %}active{% endif %}">
+                        <a href="{{ url_for('reports') }}">
+                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Log Out</span>
+                </a>
+            </div>
+        </aside>
+    {% endif %}
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper" style="{% if not session.get('user_id') %}margin-left: 0; width: 100%; display: flex; align-items: center; justify-content: center;{% endif %}">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Auto Fade out javascript for notices -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('flash-container');
+            if (container) {
+                setTimeout(() => {
+                    container.style.transition = 'opacity 0.8s ease-out';
+                    container.style.opacity = '0';
+                    setTimeout(() => container.remove(), 800);
+                }, 3500);
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

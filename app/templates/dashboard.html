@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}SMS - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Dashboard Overview</h1>
+        <p class="page-subtitle">School Management System Real-Time Aggregates</p>
+    </div>
+    <div>
+        <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: var(--primary); font-size: 14px; padding: 8px 16px;">
+            <i class="fa-solid fa-user-shield"></i> Administrator
+        </span>
+    </div>
+</div>
+
+<!-- Core Aggregate Stats -->
+<div class="dashboard-grid">
+    <!-- Stat Item 1 -->
+    <div class="glass-card stat-card">
+        <div class="stat-info">
+            <h3>TOTAL STUDENTS</h3>
+            <p>{{ total_students }}</p>
+        </div>
+        <div class="stat-icon-wrapper blue">
+            <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+    </div>
+    
+    <!-- Stat Item 2 -->
+    <div class="glass-card stat-card">
+        <div class="stat-info">
+            <h3>TOTAL TEACHERS</h3>
+            <p>{{ total_teachers }}</p>
+        </div>
+        <div class="stat-icon-wrapper indigo">
+            <i class="fa-solid fa-chalkboard-user"></i>
+        </div>
+    </div>
+    
+    <!-- Stat Item 3 -->
+    <div class="glass-card stat-card">
+        <div class="stat-info">
+            <h3>FEES COLLECTED</h3>
+            <p>${{ "{:,.2f}".format(total_fees) }}</p>
+        </div>
+        <div class="stat-icon-wrapper emerald">
+            <i class="fa-solid fa-wallet"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation Quick Links -->
+<div class="glass-card" style="margin-bottom: 30px;">
+    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 20px; letter-spacing: 0.5px;">Quick Management Shortcuts</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px;">
+        <a href="{{ url_for('students') }}" class="btn btn-primary" style="height: 60px; font-size: 16px;">
+            <i class="fa-solid fa-graduation-cap"></i> Manage Students
+        </a>
+        <a href="{{ url_for('teachers') }}" class="btn btn-secondary" style="height: 60px; font-size: 16px; background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.25);">
+            <i class="fa-solid fa-chalkboard-user" style="color: var(--secondary);"></i> Manage Teachers
+        </a>
+        <a href="{{ url_for('attendance') }}" class="btn btn-secondary" style="height: 60px; font-size: 16px; background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.25);">
+            <i class="fa-solid fa-calendar-check" style="color: #38bdf8;"></i> Attendance
+        </a>
+        <a href="{{ url_for('fees') }}" class="btn btn-secondary" style="height: 60px; font-size: 16px; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.25);">
+            <i class="fa-solid fa-file-invoice-dollar" style="color: var(--success);"></i> Fee Payments
+        </a>
+        <a href="{{ url_for('reports') }}" class="btn btn-secondary" style="height: 60px; font-size: 16px; background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.25);">
+            <i class="fa-solid fa-square-poll-vertical" style="color: var(--warning);"></i> View Reports
+        </a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 35px;">
+    <!-- Welcome Panel -->
+    <div class="glass-card" style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(79, 70, 229, 0.1) 100%);">
+        <h3 style="font-size: 21px; font-weight: 700; margin-bottom: 12px;">Portal Administration</h3>
+        <p style="color: var(--text-muted); font-size: 15px; line-height: 1.6; margin-bottom: 20px;">
+            Welcome to the SMS Web Portal. Here you can perform actions such as editing student metrics, managing class teachers, updating attendance logs, and validating fee histories.
+        </p>
+        <div style="display: flex; gap: 15px; font-size: 13px; color: var(--text-muted);">
+            <span><i class="fa-solid fa-database"></i> MySQL Connected</span>
+            <span><i class="fa-solid fa-server"></i> Flask running</span>
+        </div>
+    </div>
+    
+    <!-- System Status -->
+    <div class="glass-card">
+        <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 15px;">Developer Information</h3>
+        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 8px;">
+                <span style="color: var(--text-muted);">Design Style</span>
+                <span>Glassmorphism Dark UI</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 8px;">
+                <span style="color: var(--text-muted);">Dockerized</span>
+                <span style="color: var(--success);"><i class="fa-solid fa-circle-check"></i> Enabled</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Collaborator Credit</span>
+                <span>shah7008</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

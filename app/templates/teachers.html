@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}SMS - Teachers Ledger{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Teachers Registry</h1>
+        <p class="page-subtitle">Manage faculty profiles and course subjects</p>
+    </div>
+</div>
+
+<div class="split-layout">
+    <!-- Left Side: CRUD Form -->
+    <div class="glass-card" style="height: fit-content;">
+        <h2 id="form-heading" style="font-size: 20px; font-weight: 700; margin-bottom: 20px; text-align: center;">Add New Teacher</h2>
+        
+        <form id="teacher-form" action="{{ url_for('add_teacher') }}" method="POST">
+            <input type="hidden" name="teacher_id" id="form-teacher-id">
+            
+            <div class="form-group">
+                <label for="form-name" class="form-label">Full Name</label>
+                <input type="text" name="name" id="form-name" class="form-control" placeholder="Enter teacher name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="form-subject" class="form-label">Subject Specialty</label>
+                <input type="text" name="subject" id="form-subject" class="form-control" placeholder="e.g. Mathematics" required>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 25px;">
+                <button type="submit" id="form-submit-btn" class="btn btn-success" style="width: 100%;">
+                    <i class="fa-solid fa-user-plus"></i> Add Teacher
+                </button>
+                <button type="button" id="form-cancel-btn" class="btn btn-secondary" style="width: 100%; display: none;" onclick="resetForm()">
+                    Cancel Edit
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Right Side: Data Table -->
+    <div class="glass-card">
+        <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
+            <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted); font-size: 18px;"></i>
+            <input type="text" id="table-search" class="form-control" placeholder="Search teacher names dynamically..." onkeyup="filterTable()">
+        </div>
+        
+        <div class="table-responsive">
+            <table class="data-table" id="teacher-data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 70px; text-align: center;">ID</th>
+                        <th>Name</th>
+                        <th style="width: 180px;">Subject Specialty</th>
+                        <th style="width: 130px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in teachers %}
+                        <tr>
+                            <td style="text-align: center;">{{ t.id }}</td>
+                            <td class="teacher-name-cell" style="font-weight: 500;">{{ t.name }}</td>
+                            <td><span class="badge" style="background: rgba(99, 102, 241, 0.1); color: var(--secondary);">{{ t.subject }}</span></td>
+                            <td style="text-align: center;">
+                                <div class="action-links" style="justify-content: center;">
+                                    <span class="action-link edit" onclick="populateEditForm('{{ t.id }}', '{{ t.name }}', '{{ t.subject }}')">
+                                        <i class="fa-regular fa-pen-to-square"></i> Edit
+                                    </span>
+                                    <a href="{{ url_for('delete_teacher', teacher_id=t.id) }}" class="action-link delete" onclick="return confirm('Are you sure you want to delete teacher {{ t.name }}?');">
+                                        <i class="fa-regular fa-trash-can"></i> Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                <i class="fa-solid fa-inbox" style="font-size: 24px; margin-bottom: 10px; display: block;"></i> No active teachers found. Register one on the left.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function filterTable() {
+        const query = document.getElementById("table-search").value.toLowerCase();
+        const rows = document.querySelectorAll("#teacher-data-table tbody tr");
+        
+        rows.forEach(row => {
+            const nameCell = row.querySelector(".teacher-name-cell");
+            if (nameCell) {
+                const nameText = nameCell.innerText.toLowerCase();
+                row.style.display = nameText.includes(query) ? "" : "none";
+            }
+        });
+    }
+
+    function populateEditForm(id, name, subject) {
+        document.getElementById("form-teacher-id").value = id;
+        document.getElementById("form-name").value = name;
+        document.getElementById("form-subject").value = subject;
+        
+        const form = document.getElementById("teacher-form");
+        form.action = "{{ url_for('update_teacher') }}";
+        
+        document.getElementById("form-heading").innerText = "Edit Teacher Details";
+        
+        const submitBtn = document.getElementById("form-submit-btn");
+        submitBtn.className = "btn btn-primary";
+        submitBtn.innerHTML = '<i class="fa-solid fa-user-check"></i> Save Changes';
+        
+        document.getElementById("form-cancel-btn").style.display = "block";
+    }
+
+    function resetForm() {
+        document.getElementById("teacher-form").reset();
+        document.getElementById("form-teacher-id").value = "";
+        
+        const form = document.getElementById("teacher-form");
+        form.action = "{{ url_for('add_teacher') }}";
+        
+        document.getElementById("form-heading").innerText = "Add New Teacher";
+        
+        const submitBtn = document.getElementById("form-submit-btn");
+        submitBtn.className = "btn btn-success";
+        submitBtn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Add Teacher';
+        
+        document.getElementById("form-cancel-btn").style.display = "none";
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}SMS - Daily Attendance{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Attendance Tracking</h1>
+        <p class="page-subtitle">Mark and filter daily attendance logs</p>
+    </div>
+</div>
+
+<div class="split-layout">
+    <!-- Left Side: Mark Attendance Form -->
+    <div class="glass-card" style="height: fit-content;">
+        <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 20px; text-align: center;">Mark Attendance</h2>
+        
+        <form action="{{ url_for('attendance') }}" method="POST">
+            <div class="form-group">
+                <label for="student_id" class="form-label">Select Student</label>
+                <select name="student_id" id="student_id" class="form-control" required>
+                    <option value="" disabled selected>-- Select Student --</option>
+                    {% for s in students %}
+                        <option value="{{ s.id }}">{{ s.name }} ({{ s.student_class }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="date" class="form-label">Date</label>
+                <input type="date" name="date" id="date" class="form-control" value="{{ today }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="status" class="form-label">Attendance Status</label>
+                <select name="status" id="status" class="form-control" required>
+                    <option value="Present" selected>Present</option>
+                    <option value="Absent">Absent</option>
+                    <option value="Late">Late</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 15px;">
+                <i class="fa-solid fa-calendar-check"></i> Save Record
+            </button>
+        </form>
+    </div>
+
+    <!-- Right Side: Filter & Records Table -->
+    <div class="glass-card">
+        <!-- Filter Form -->
+        <form action="{{ url_for('attendance') }}" method="GET" style="display: flex; gap: 15px; margin-bottom: 25px; align-items: flex-end;">
+            <div class="form-group" style="margin-bottom: 0; flex-grow: 1;">
+                <label for="filter_date" class="form-label" style="margin-bottom: 6px;">Filter by Date</label>
+                <input type="date" name="filter_date" id="filter_date" class="form-control" value="{{ filter_date or '' }}">
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-filter"></i> Filter
+            </button>
+            {% if filter_date %}
+                <a href="{{ url_for('attendance') }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrows-rotate"></i> Reset
+                </a>
+            {% endif %}
+        </form>
+        
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px; text-align: center;">Log ID</th>
+                        <th>Student Name</th>
+                        <th style="width: 100px; text-align: center;">Class</th>
+                        <th style="width: 110px; text-align: center;">Date</th>
+                        <th style="width: 100px; text-align: center;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in records %}
+                        <tr>
+                            <td style="text-align: center; color: var(--text-muted);">{{ r.id }}</td>
+                            <td style="font-weight: 500;">{{ r.student_name }}</td>
+                            <td style="text-align: center;">{{ r.student_class }}</td>
+                            <td style="text-align: center;">{{ r.date }}</td>
+                            <td style="text-align: center;">
+                                {% if r.status == 'Present' %}
+                                    <span class="badge present"><i class="fa-solid fa-circle-check"></i> Present</span>
+                                {% elif r.status == 'Absent' %}
+                                    <span class="badge absent"><i class="fa-solid fa-circle-xmark"></i> Absent</span>
+                                {% else %}
+                                    <span class="badge late"><i class="fa-solid fa-circle-minus"></i> Late</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                <i class="fa-solid fa-calendar-xmark" style="font-size: 24px; margin-bottom: 10px; display: block;"></i> No attendance entries registered on this date.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}SMS - Students Ledger{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Students Registry</h1>
+        <p class="page-subtitle">Manage student enrollment, details, and updates</p>
+    </div>
+</div>
+
+<div class="split-layout">
+    <!-- Left Side: CRUD Form Card -->
+    <div class="glass-card" style="height: fit-content;">
+        <h2 id="form-heading" style="font-size: 20px; font-weight: 700; margin-bottom: 20px; text-align: center;">Add New Student</h2>
+        
+        <form id="student-form" action="{{ url_for('add_student') }}" method="POST">
+            <!-- Hidden Student ID for editing -->
+            <input type="hidden" name="student_id" id="form-student-id">
+            
+            <div class="form-group">
+                <label for="form-name" class="form-label">Full Name</label>
+                <input type="text" name="name" id="form-name" class="form-control" placeholder="Enter full name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="form-class" class="form-label">Class (Grade)</label>
+                <input type="text" name="class" id="form-class" class="form-control" placeholder="e.g. 10th Grade" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="form-age" class="form-label">Age</label>
+                <input type="number" name="age" id="form-age" class="form-control" placeholder="Enter age" min="1" required>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 25px;">
+                <button type="submit" id="form-submit-btn" class="btn btn-success" style="width: 100%;">
+                    <i class="fa-solid fa-user-plus"></i> Add Student
+                </button>
+                <button type="button" id="form-cancel-btn" class="btn btn-secondary" style="width: 100%; display: none;" onclick="resetForm()">
+                    Cancel Edit
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Right Side: Data Table Card -->
+    <div class="glass-card">
+        <!-- Live Filter Input -->
+        <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
+            <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted); font-size: 18px;"></i>
+            <input type="text" id="table-search" class="form-control" placeholder="Search student names dynamically..." onkeyup="filterTable()">
+        </div>
+        
+        <div class="table-responsive">
+            <table class="data-table" id="student-data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 70px; text-align: center;">ID</th>
+                        <th>Name</th>
+                        <th style="width: 130px; text-align: center;">Class</th>
+                        <th style="width: 90px; text-align: center;">Age</th>
+                        <th style="width: 130px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in students %}
+                        <tr>
+                            <td style="text-align: center;">{{ s.id }}</td>
+                            <td class="student-name-cell" style="font-weight: 500;">{{ s.name }}</td>
+                            <td style="text-align: center;"><span class="badge" style="background: rgba(99, 102, 241, 0.1); color: var(--secondary);">{{ s.student_class }}</span></td>
+                            <td style="text-align: center;">{{ s.age }}</td>
+                            <td style="text-align: center;">
+                                <div class="action-links" style="justify-content: center;">
+                                    <span class="action-link edit" onclick="populateEditForm('{{ s.id }}', '{{ s.name }}', '{{ s.student_class }}', '{{ s.age }}')">
+                                        <i class="fa-regular fa-pen-to-square"></i> Edit
+                                    </span>
+                                    <a href="{{ url_for('delete_student', student_id=s.id) }}" class="action-link delete" onclick="return confirm('Are you sure you want to delete {{ s.name }}? This will clear all attendance/fee logs.');">
+                                        <i class="fa-regular fa-trash-can"></i> Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                <i class="fa-solid fa-inbox" style="font-size: 24px; margin-bottom: 10px; display: block;"></i> No student records found. Add one on the left.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Client-side instant filter search
+    function filterTable() {
+        const query = document.getElementById("table-search").value.toLowerCase();
+        const rows = document.querySelectorAll("#student-data-table tbody tr");
+        
+        rows.forEach(row => {
+            const nameCell = row.querySelector(".student-name-cell");
+            if (nameCell) {
+                const nameText = nameCell.innerText.toLowerCase();
+                row.style.display = nameText.includes(query) ? "" : "none";
+            }
+        });
+    }
+
+    // Toggle Form into Edit Mode
+    function populateEditForm(id, name, student_class, age) {
+        document.getElementById("form-student-id").value = id;
+        document.getElementById("form-name").value = name;
+        document.getElementById("form-class").value = student_class;
+        document.getElementById("form-age").value = age;
+        
+        // Change action url and buttons
+        const form = document.getElementById("student-form");
+        form.action = "{{ url_for('update_student') }}";
+        
+        document.getElementById("form-heading").innerText = "Edit Student details";
+        
+        const submitBtn = document.getElementById("form-submit-btn");
+        submitBtn.className = "btn btn-primary";
+        submitBtn.innerHTML = '<i class="fa-solid fa-user-check"></i> Save Changes';
+        
+        document.getElementById("form-cancel-btn").style.display = "block";
+    }
+
+    // Reset Form to Add Mode
+    function resetForm() {
+        document.getElementById("student-form").reset();
+        document.getElementById("form-student-id").value = "";
+        
+        const form = document.getElementById("student-form");
+        form.action = "{{ url_for('add_student') }}";
+        
+        document.getElementById("form-heading").innerText = "Add New Student";
+        
+        const submitBtn = document.getElementById("form-submit-btn");
+        submitBtn.className = "btn btn-success";
+        submitBtn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Add Student';
+        
+        document.getElementById("form-cancel-btn").style.display = "none";
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}SMS - Portal Login{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="glass-card">
+        <div class="login-header">
+            <div class="logo-icon">S</div>
+            <h1>Portal Login</h1>
+            <p>School Management System Admin Panel</p>
+        </div>
+        
+        <form action="{{ url_for('login') }}" method="POST">
+            <div class="form-group">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" name="username" id="username" class="form-control" placeholder="Enter admin username" required autofocus>
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" name="password" id="password" class="form-control" placeholder="Enter security password" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; height: 48px;">
+                <i class="fa-solid fa-arrow-right-to-bracket"></i> Authenticate
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

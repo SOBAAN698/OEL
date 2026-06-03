@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}SMS - Analytical Reports{% endblock %}
+
+{% block head %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Analytics & Reports</h1>
+        <p class="page-subtitle">School distribution models, attendance rates, and fee logs</p>
+    </div>
+</div>
+
+<!-- General Stats -->
+<div class="dashboard-grid" style="margin-bottom: 30px;">
+    <div class="glass-card stat-card" style="padding: 20px;">
+        <div class="stat-info">
+            <h3>TOTAL ENROLMENT</h3>
+            <p>{{ total_students }}</p>
+        </div>
+        <div class="stat-icon-wrapper blue" style="width: 50px; height: 50px; font-size: 20px;">
+            <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+    </div>
+    
+    <div class="glass-card stat-card" style="padding: 20px;">
+        <div class="stat-info">
+            <h3>FACULTY MEMBERS</h3>
+            <p>{{ total_teachers }}</p>
+        </div>
+        <div class="stat-icon-wrapper indigo" style="width: 50px; height: 50px; font-size: 20px;">
+            <i class="fa-solid fa-chalkboard-user"></i>
+        </div>
+    </div>
+    
+    <div class="glass-card stat-card" style="padding: 20px;">
+        <div class="stat-info">
+            <h3>ATTENDANCE RATE</h3>
+            <p>{{ "{:.1f}%".format(present_rate) }}</p>
+        </div>
+        <div class="stat-icon-wrapper emerald" style="width: 50px; height: 50px; font-size: 20px; background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.25); color: #38bdf8;">
+            <i class="fa-solid fa-square-poll-vertical"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Grid -->
+<div class="reports-grid">
+    <!-- Grade wise enrolment (Bar Chart) -->
+    <div class="glass-card chart-card">
+        <h3 style="font-size: 17px; font-weight: 700; margin-bottom: 20px;">Grade-Wise Student Distribution</h3>
+        <div class="chart-container">
+            <canvas id="enrolmentChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Attendance Breakdown (Doughnut Chart) -->
+    <div class="glass-card chart-card">
+        <h3 style="font-size: 17px; font-weight: 700; margin-bottom: 20px;">Attendance Status Breakdown</h3>
+        <div class="chart-container">
+            <canvas id="attendanceChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Fee History -->
+<div class="glass-card" style="margin-top: 30px;">
+    <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 20px;">Recent Tuition Fee Transactions</h3>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 80px; text-align: center;">Log ID</th>
+                    <th style="width: 100px; text-align: center;">Student ID</th>
+                    <th>Student Name</th>
+                    <th style="width: 100px; text-align: center;">Class</th>
+                    <th style="text-align: right; width: 120px;">Amount Paid</th>
+                    <th style="width: 120px; text-align: center;">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in recent_fees %}
+                    <tr>
+                        <td style="text-align: center; color: var(--text-muted);">{{ f.id }}</td>
+                        <td style="text-align: center;">{{ f.student_id }}</td>
+                        <td style="font-weight: 500;">{{ f.student_name }}</td>
+                        <td style="text-align: center;">{{ f.student_class }}</td>
+                        <td style="text-align: right; font-weight: 600; color: #34d399;">${{ "{:,.2f}".format(f.amount) }}</td>
+                        <td style="text-align: center;">{{ f.date }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">No transaction records available.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 1. Grade-Wise Enrolment Chart Configuration
+    const classLabels = [];
+    const classCounts = [];
+    {% for item in class_distribution %}
+        classLabels.push("{{ item.class }}");
+        classCounts.push({{ item.count }});
+    {% endfor %}
+
+    const enrolmentCtx = document.getElementById('enrolmentChart').getContext('2d');
+    new Chart(enrolmentCtx, {
+        type: 'bar',
+        data: {
+            labels: classLabels,
+            datasets: [{
+                label: 'Students Enrolled',
+                data: classCounts,
+                backgroundColor: 'rgba(59, 130, 246, 0.45)',
+                borderColor: 'rgba(59, 130, 246, 0.95)',
+                borderWidth: 1.5,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: '#94a3b8' },
+                    grid: { color: 'rgba(255, 255, 255, 0.04)' }
+                },
+                x: {
+                    ticks: { color: '#94a3b8' },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+
+    // 2. Attendance Status Breakdown Chart Configuration
+    const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+    new Chart(attendanceCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Present', 'Absent', 'Late'],
+            datasets: [{
+                data: [
+                    {{ att_summary.get('Present', 0) }},
+                    {{ att_summary.get('Absent', 0) }},
+                    {{ att_summary.get('Late', 0) }}
+                ],
+                backgroundColor: [
+                    'rgba(16, 185, 129, 0.55)', /* Emerald 500 */
+                    'rgba(239, 68, 68, 0.55)',   /* Red 500 */
+                    'rgba(245, 158, 11, 0.55)'   /* Amber 500 */
+                ],
+                borderColor: [
+                    '#10b981',
+                    '#ef4444',
+                    '#f59e0b'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#94a3b8', font: { family: 'Inter' } }
+                }
+            },
+            cutout: '65%'
+        }
+    });
+</script>
+{% endblock %}
